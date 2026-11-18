@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>위험 신호 체크 & 병원 안내</title>
+    <style>
+        /* 파스텔 핑크 컬러 팔레트 및 기본 디자인 토큰 */
+        :root {
+            --bg-main: #FFF5F7;
+            --bg-gradient: linear-gradient(135deg, #FFF5F7 0%, #FFEFF3 100%);
+            --card-bg: #FFFFFF;
+            --pink-50: #FFF0F3;
+            --pink-100: #FFE4EC;
+            --pink-200: #F8BBD0;
+            --pink-300: #F48FB1;
+            --pink-500: #EC407A;
+            --pink-600: #D81B60;
+            --text-dark: #3B2830;
+            --text-muted: #6E5660;
+            --text-light: #967D87;
+            --shadow-soft: 0 8px 24px -4px rgba(236, 64, 122, 0.08), 0 2px 6px -1px rgba(236, 64, 122, 0.04);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", "맑은 고딕", sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 24px 16px 60px;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        /* 상단 타이틀 영역 */
+        .hero-header {
+            background: var(--card-bg);
+            border: 1.5px solid var(--pink-200);
+            border-radius: var(--radius-lg);
+            padding: 32px 24px;
+            text-align: center;
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--pink-300), var(--pink-500));
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--pink-50);
+            color: var(--pink-600);
+            border: 1px solid var(--pink-200);
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 999px;
+            margin-bottom: 14px;
+        }
+
+        .hero-header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            letter-spacing: -0.02em;
+            margin-bottom: 10px;
+        }
+
+        .hero-header p {
+            font-size: 0.98rem;
+            color: var(--text-muted);
+            max-width: 520px;
+            margin: 0 auto;
+            word-break: keep-all;
+        }
+
+        /* 공통 섹션 카드 */
+        .section-card {
+            background: var(--card-bg);
+            border: 1.5px solid var(--pink-200);
+            border-radius: var(--radius-lg);
+            padding: 28px 22px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .section-title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-badge {
+            background: var(--pink-500);
+            color: #FFFFFF;
+            font-size: 0.82rem;
+            font-weight: 800;
+            padding: 4px 11px;
+            border-radius: 999px;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            letter-spacing: -0.01em;
+        }
+
+        .section-desc {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            word-break: keep-all;
+        }
+
+        .reset-btn {
+            background: var(--pink-50);
+            color: var(--pink-600);
+            border: 1px solid var(--pink-200);
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .reset-btn:hover {
+            background: var(--pink-100);
+        }
+
+        /* 위험 신호 체크리스트 아이템 */
+        .symptom-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .symptom-item {
+            border: 1.5px solid var(--pink-200);
+            border-radius: var(--radius-md);
+            background: #FFFFFF;
+            transition: all 0.22s ease;
+            overflow: hidden;
+        }
+
+        .symptom-item:hover {
+            border-color: var(--pink-300);
+            background: #FFFBFD;
+        }
+
+        .symptom-item.checked {
+            border-color: var(--pink-500);
+            background: var(--pink-50);
+            box-shadow: 0 4px 12px rgba(236, 64, 122, 0.1);
+        }
+
+        .symptom-main {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 16px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .custom-checkbox {
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            border: 2px solid var(--pink-300);
+            background: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+            transition: all 0.2s ease;
+            color: transparent;
+        }
+
+        .symptom-item.checked .custom-checkbox {
+            background: var(--pink-500);
+            border-color: var(--pink-500);
+            color: #FFFFFF;
+        }
+
+        .symptom-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .symptom-title {
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            word-break: keep-all;
+            margin-bottom: 4px;
+        }
+
+        .symptom-item.checked .symptom-title {
+            color: var(--pink-600);
+        }
+
+        .symptom-tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--pink-600);
+            background: var(--pink-100);
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .accordion-btn {
+            background: var(--pink-50);
+            border: 1px solid var(--pink-200);
+            color: var(--pink-600);
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .accordion-btn:hover {
+            background: var(--pink-100);
+        }
+
+        .accordion-arrow {
+            display: inline-block;
+            transition: transform 0.25s ease;
+            font-size: 0.7rem;
+        }
+
+        .accordion-btn.open .accordion-arrow {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            display: none;
+            padding: 0 16px 16px 54px;
+        }
+
+        .accordion-content.open {
+            display: block;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .accordion-box {
+            background: #FFFFFF;
+            border: 1px solid var(--pink-200);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            word-break: keep-all;
+        }
+
+        /* 실시간 체크 결과 카드 */
+        .result-box {
+            margin-top: 22px;
+            border-radius: var(--radius-md);
+            padding: 22px 20px;
+            border: 1.5px solid var(--pink-200);
+            transition: all 0.3s ease;
+        }
+
+        /* 1단계: 안심 */
+        .result-safe {
+            background: #FFF9FB;
+            border-color: var(--pink-200);
+        }
+
+        /* 2단계: 주의 및 관찰 */
+        .result-caution {
+            background: #FFF3F6;
+            border-color: var(--pink-300);
+        }
+
+        /* 3단계: 병원 진료 권고 */
+        .result-urgent {
+            background: linear-gradient(135deg, #FFE4EC 0%, #FFD6E2 100%);
+            border-color: var(--pink-500);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .result-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            background: #FFFFFF;
+            box-shadow: 0 2px 6px rgba(236, 64, 122, 0.12);
+            flex-shrink: 0;
+        }
+
+        .result-badge {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--pink-600);
+            display: block;
+        }
+
+        .result-title {
+            font-size: 1.12rem;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        .result-desc {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            word-break: keep-all;
+            margin-bottom: 14px;
+        }
+
+        .result-tips {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            font-size: 0.86rem;
+            color: var(--text-dark);
+            border: 1px solid rgba(248, 187, 208, 0.6);
+        }
+
+        .result-tips ul {
+            padding-left: 18px;
+            margin-top: 6px;
+            color: var(--text-muted);
+        }
+
+        .result-tips li {
+            margin-bottom: 4px;
+        }
+
+        /* 섹션 2: 병원 안내 스타일 */
+        .guide-sub-box {
+            background: var(--pink-50);
+            border: 1px solid var(--pink-200);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            margin-bottom: 20px;
+        }
+
+        .guide-sub-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--pink-600);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tip-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+
+        .tip-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            word-break: keep-all;
+        }
+
+        .tip-dot {
+            color: var(--pink-500);
+            font-weight: 900;
+        }
+
+        /* 병원 방문 전 준비 체크리스트 */
+        .prep-group {
+            margin-bottom: 22px;
+        }
+
+        .prep-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .prep-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 16px;
+            background: #FFFFFF;
+            border: 1.5px solid var(--pink-200);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .prep-item:hover {
+            background: #FFF9FB;
+        }
+
+        .prep-item input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--pink-300);
+            border-radius: 6px;
+            margin-top: 2px;
+            flex-shrink: 0;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .prep-item input[type="checkbox"]:checked {
+            background: var(--pink-500);
+            border-color: var(--pink-500);
+        }
+
+        .prep-item input[type="checkbox"]:checked::after {
+            content: "✓";
+            position: absolute;
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 900;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .prep-text strong {
+            display: block;
+            font-size: 0.94rem;
+            color: var(--text-dark);
+            margin-bottom: 2px;
+        }
+
+        .prep-text span {
+            font-size: 0.84rem;
+            color: var(--text-muted);
+            display: block;
+            word-break: keep-all;
+        }
+
+        /* 버튼 영역 */
+        .copy-section {
+            background: #FFF9FB;
+            border: 1.5px dashed var(--pink-300);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .copy-section p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            word-break: keep-all;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, var(--pink-300) 0%, var(--pink-500) 100%);
+            color: #FFFFFF;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 15px 20px;
+            font-size: 0.98rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(236, 64, 122, 0.25);
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(236, 64, 122, 0.32);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* 주변 병원 찾기 그리드 */
+        .map-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+            margin-bottom: 20px;
+        }
+
+        .map-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 16px 12px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            border: 1.5px solid var(--pink-200);
+            background: #FFFFFF;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+        }
+
+        .map-btn:hover {
+            border-color: var(--pink-500);
+            background: var(--pink-50);
+            transform: translateY(-2px);
+        }
+
+        .map-btn-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--pink-600);
+            margin-bottom: 4px;
+        }
+
+        .map-btn-sub {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        /* 응급 상황 안내 박스 */
+        .emergency-box {
+            background: #FFF0F3;
+            border: 1.5px solid var(--pink-300);
+            border-radius: var(--radius-md);
+            padding: 18px;
+        }
+
+        .emergency-title {
+            font-size: 0.98rem;
+            font-weight: 800;
+            color: var(--pink-600);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .emergency-list {
+            padding-left: 18px;
+            font-size: 0.86rem;
+            color: var(--text-dark);
+            margin-bottom: 14px;
+            word-break: keep-all;
+        }
+
+        .emergency-list li {
+            margin-bottom: 4px;
+        }
+
+        .emergency-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .emergency-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 14px;
+            border-radius: 10px;
+            font-size: 0.84rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .emergency-call {
+            background: var(--pink-500);
+            color: #FFFFFF;
+        }
+
+        .emergency-call:hover {
+            background: var(--pink-600);
+        }
+
+        .emergency-portal {
+            background: #FFFFFF;
+            color: var(--pink-600);
+            border: 1px solid var(--pink-300);
+        }
+
+        .emergency-portal:hover {
+            background: var(--pink-100);
+        }
+
+        /* 하단 면책 안내 */
+        .footer-note {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            padding: 0 12px;
+            word-break: keep-all;
+        }
+
+        /* 토스트 알림 */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(59, 40, 48, 0.94);
+            color: #FFFFFF;
+            padding: 12px 22px;
+            border-radius: 999px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 100;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 모바일 반응형 조정 */
+        @media (max-width: 540px) {
+            body {
+                padding: 16px 12px 48px;
+            }
+            .hero-header {
+                padding: 26px 18px;
+            }
+            .hero-header h1 {
+                font-size: 1.45rem;
+            }
+            .section-card {
+                padding: 22px 16px;
+            }
+            .accordion-content {
+                padding: 0 14px 14px 14px;
+            }
+            .map-grid {
+                grid-template-columns: 1fr;
+            }
+            .toast {
+                width: calc(100% - 32px);
+                white-space: normal;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="container">
+        <!-- 상단 타이틀 영역 -->
+        <header class="hero-header">
+            <div class="hero-badge">🌸 내 몸을 아끼는 작은 점검</div>
+            <h1>위험 신호 체크 & 병원 안내</h1>
+            <p>평소와 다른 내 몸의 신호를 가볍게 점검하고, 필요할 때 편안하게 병원을 찾아보세요.</p>
+        </header>
+
+        <!-- 섹션 1: 위험 신호 체크 -->
+        <section class="section-card" aria-labelledby="sec1-title">
+            <div class="section-header">
+                <div class="section-title-group">
+                    <span class="step-badge">CHECK 1</span>
+                    <h2 id="sec1-title" class="section-title">위험 신호 체크</h2>
+                </div>
+                <button type="button" class="reset-btn" onclick="resetChecks()">선택 초기화</button>
+            </div>
+            <p class="section-desc">
+                최근 1~2개월 사이에 경험한 증상이 있다면 해당 카드를 눌러 체크해 보세요. (여러 개 선택할 수 있어요)
+            </p>
+
+            <!-- 7가지 주요 위험 증상 체크리스트 -->
+            <div id="symptom-list" class="symptom-list"></div>
+
+            <!-- 실시간 결과 피드백 카드 -->
+            <div id="result-box" class="result-box result-safe" aria-live="polite"></div>
+        </section>
+
+        <!-- 섹션 2: 병원 안내 -->
+        <section class="section-card" aria-labelledby="sec2-title">
+            <div class="section-header">
+                <div class="section-title-group">
+                    <span class="step-badge">GUIDE 2</span>
+                    <h2 id="sec2-title" class="section-title">병원 안내</h2>
+                </div>
+            </div>
+            <p class="section-desc">
+                산부인과 방문이 처음이거나 망설여지시나요? 아래 내용을 가볍게 확인하고 편안한 마음으로 다녀오세요.
+            </p>
+
+            <!-- 이런 경우엔 꼭 병원에 가보세요 요약 팁 -->
+            <div class="guide-sub-box">
+                <h3 class="guide-sub-title">🌷 이런 경우엔 꼭 병원에 가보세요</h3>
+                <ul class="tip-list">
+                    <li><span class="tip-dot">•</span><span>진통제를 먹어도 일상생활이 어려울 만큼 생리통이 심할 때</span></li>
+                    <li><span class="tip-dot">•</span><span>출혈량이 갑자기 늘거나 큰 핏덩어리가 자주 나오고, 어지럼증이 동반될 때</span></li>
+                    <li><span class="tip-dot">•</span><span>생리 기간이 아닌데 피가 비치거나, 3개월 이상 생리가 없을 때</span></li>
+                    <li><span class="tip-dot">•</span><span>아랫배 통증과 함께 열이 나거나 분비물에서 평소와 다른 심한 냄새가 날 때</span></li>
+                </ul>
+            </div>
+
+            <!-- 병원 가기 전 준비 체크리스트 -->
+            <div class="prep-group">
+                <h3 class="guide-sub-title">📝 병원 가기 전 준비 체크리스트</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">미리 확인해 가면 의사 선생님께 내 상태를 훨씬 쉽게 설명할 수 있어요.</p>
+                
+                <div class="prep-list">
+                    <label class="prep-item">
+                        <input type="checkbox">
+                        <div class="prep-text">
+                            <strong>마지막 생리 시작일</strong>
+                            <span>가장 최근에 생리가 시작된 날짜를 달력이나 앱에서 미리 확인해 주세요.</span>
+                        </div>
+                    </label>
+                    <label class="prep-item">
+                        <input type="checkbox">
+                        <div class="prep-text">
+                            <strong>평소 생리 주기 및 기간</strong>
+                            <span>생리가 며칠 간격으로 돌아오는지, 한 번 하면 며칠 동안 지속되는지 정리해 보세요.</span>
+                        </div>
+                    </label>
+                    <label class="prep-item">
+                        <input type="checkbox">
+                        <div class="prep-text">
+                            <strong>증상 메모 (통증 정도 · 출혈량)</strong>
+                            <span>통증이 0~10점 중 어느 정도인지, 대형 패드를 몇 시간마다 갈았는지 적어두면 좋아요.</span>
+                        </div>
+                    </label>
+                    <label class="prep-item">
+                        <input type="checkbox">
+                        <div class="prep-text">
+                            <strong>현재 복용 중인 약</strong>
+                            <span>진통제, 피임약, 영양제, 한약 등 먹고 있는 약이 있다면 이름을 메모하거나 사진을 찍어가세요.</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 내 증상 요약 & 질문 복사하기 -->
+            <div class="copy-section">
+                <p>
+                    진료실에서 긴장해서 말을 잊어버릴까 걱정되시나요?<br>
+                    위에서 체크한 증상과 의사 선생님께 드릴 추천 질문을 한 번에 복사해 메모장에 붙여넣어 보세요!
+                </p>
+                <button type="button" class="btn-primary" onclick="copySummaryToClipboard()">
+                    <span>📋 내 증상 요약 & 질문 복사하기</span>
+                </button>
+            </div>
+
+            <!-- 가까운 산부인과 찾기 -->
+            <div>
+                <h3 class="guide-sub-title">🏥 가까운 산부인과 찾기</h3>
+                <div class="map-grid">
+                    <a href="https://map.naver.com/p/search/산부인과" target="_blank" rel="noopener noreferrer" class="map-btn">
+                        <span class="map-btn-title">네이버 지도에서 찾기 ↗</span>
+                        <span class="map-btn-sub">내 주변 산부인과 · 여의사 진료 확인</span>
+                    </a>
+                    <a href="https://map.kakao.com/?q=산부인과" target="_blank" rel="noopener noreferrer" class="map-btn">
+                        <span class="map-btn-title">카카오맵에서 찾기 ↗</span>
+                        <span class="map-btn-sub">가까운 여성병원 · 진료 시간 검색</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 응급 상황 안내 -->
+            <div class="emergency-box">
+                <h3 class="emergency-title">🚨 지체하지 말고 응급실이나 119에 연락해야 할 때</h3>
+                <ul class="emergency-list">
+                    <li>어지러워서 서 있기 힘들거나 눈앞이 캄캄해지며 쓰러질 것 같을 때</li>
+                    <li>1시간에 대형 패드 2장 이상이 흠뻑 젖을 정도로 하혈이 멈추지 않을 때</li>
+                    <li>38도 이상의 고열과 함께 아랫배를 누를 수 없을 만큼 극심한 통증이 있을 때</li>
+                </ul>
+                <div class="emergency-actions">
+                    <a href="tel:119" class="emergency-link emergency-call">📞 응급 119 전화걸기</a>
+                    <a href="https://www.e-gen.or.kr/" target="_blank" rel="noopener noreferrer" class="emergency-link emergency-portal">🌙 야간·휴일 진료 병원 찾기</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 하단 면책 안내 -->
+        <footer class="footer-note">
+            본 페이지의 자가 체크는 의학적 진단을 대신할 수 없으며, 정확한 건강 상태 확인을 위해 반드시 전문의와 상담하시기 바랍니다.
+        </footer>
+    </main>
+
+    <!-- 복사 완료 토스트 메시지 -->
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script>
+        // 7가지 주요 위험 증상 데이터 (일상 언어 + 의학적 배경 설명 + 긴급도)
+        const symptoms = [
+            {
+                id: 'heavy_bleeding',
+                title: '생리대를 1~2시간마다 갈아야 할 정도로 출혈량이 너무 많아요',
+                tag: '과다출혈',
+                urgent: true,
+                reason: '평소보다 출혈량이 급격히 늘거나 500원 동전 크기 이상의 큰 핏덩어리가 자주 나온다면 자궁근종, 자궁선근증 또는 호르몬 불균형의 신호일 수 있어요. 과다 출혈이 이어지면 심각한 빈혈로 이어질 수 있어 빠른 확인이 필요해요.'
+            },
+            {
+                id: 'severe_pain',
+                title: '진통제를 먹어도 가라앉지 않을 만큼 배가 극심하게 아파요',
+                tag: '심한 월경통',
+                urgent: true,
+                reason: '생리통은 무조건 참아야 하는 통증이 아니에요. 약을 먹어도 낫지 않거나 예전보다 통증이 점점 심해져 일상생활이 어렵다면 자궁내막증이나 골반 질환이 원인일 수 있으니 꼭 검진을 받아보세요.'
+            },
+            {
+                id: 'irregular_bleeding',
+                title: '생리 기간이 아닌데도 피가 비치거나 하혈이 있어요',
+                tag: '부정출혈',
+                urgent: false,
+                reason: '스트레스나 피로로 인한 일시적인 배란혈일 수도 있지만, 자궁경부나 자궁 내막의 염증, 용종(폴립) 등 다른 원인이 있을 수 있어요. 2번 이상 반복된다면 꼭 원인을 확인해 보는 것이 좋아요.'
+            },
+            {
+                id: 'amenorrhea',
+                title: '3개월 이상 생리를 안 하거나 주기가 너무 불규칙해요',
+                tag: '무월경 · 월경불순',
+                urgent: false,
+                reason: '무리한 다이어트, 극심한 스트레스, 다낭성 난소 증후군, 갑상선 문제 등으로 배란이 원활하지 않을 때 나타나는 신호예요. 오래 방치하면 자궁 내막 건강에 영향을 줄 수 있어요.'
+            },
+            {
+                id: 'anemia',
+                title: '어지럽고 숨이 차거나 유독 심하게 피곤해요',
+                tag: '빈혈 의심',
+                urgent: true,
+                reason: '월경 중 출혈로 인해 몸속 철분이 많이 부족해졌다는 신호예요. 가벼운 어지럼증을 넘어 계단을 오를 때 숨이 차거나 가슴이 두근거린다면 철분제 처방과 출혈 원인 치료가 필요해요.'
+            },
+            {
+                id: 'prolonged_period',
+                title: '생리 기간이 8일 이상 너무 길게 이어져요',
+                tag: '과다월경기간',
+                urgent: false,
+                reason: '정상적인 생리 기간은 보통 3~7일 정도예요. 8일 이상 출혈이 멈추지 않고 계속된다면 호르몬 조절 이상이나 자궁 내 질환의 가능성이 있으며, 체력 저하와 빈혈을 유발할 수 있어요.'
+            },
+            {
+                id: 'infection',
+                title: '아랫배 통증과 함께 열이 나거나 분비물 냄새·색이 이상해요',
+                tag: '감염 의심',
+                urgent: true,
+                reason: '질염이 심해졌거나 골반염 등 생식기 감염이 발생했을 가능성이 높아요. 열과 오한이 동반된다면 항생제 치료가 시급할 수 있으니 미루지 말고 바로 병원에 방문해 주세요.'
+            }
+        ];
+
+        // 선택된 증상 ID 집합
+        const selectedIds = new Set();
+
+        // 초기 렌더링
+        document.addEventListener('DOMContentLoaded', () => {
+            renderSymptoms();
+            updateResult();
+        });
+
+        // 체크리스트 카드 렌더링 함수
+        function renderSymptoms() {
+            const listEl = document.getElementById('symptom-list');
+            listEl.innerHTML = '';
+
+            symptoms.forEach((item) => {
+                const isChecked = selectedIds.has(item.id);
+                const card = document.createElement('div');
+                card.className = `symptom-item ${isChecked ? 'checked' : ''}`;
+
+                card.innerHTML = `
+                    <div class="symptom-main" onclick="toggleCheck('${item.id}')">
+                        <div class="custom-checkbox" aria-hidden="true">✓</div>
+                        <div class="symptom-text">
+                            <div class="symptom-title">${item.title}</div>
+                            <span class="symptom-tag">${item.tag}</span>
+                        </div>
+                        <button type="button" class="accordion-btn" id="btn-${item.id}" onclick="toggleReason(event, '${item.id}')">
+                            <span>왜 확인해야 할까요?</span>
+                            <span class="accordion-arrow">▼</span>
+                        </button>
+                    </div>
+                    <div class="accordion-content" id="reason-${item.id}">
+                        <div class="accordion-box">${item.reason}</div>
+                    </div>
+                `;
+
+                listEl.appendChild(card);
+            });
+        }
+
+        // 증상 체크 토글
+        function toggleCheck(id) {
+            if (selectedIds.has(id)) {
+                selectedIds.delete(id);
+            } else {
+                selectedIds.add(id);
+            }
+            renderSymptoms();
+            updateResult();
+        }
+
+        // '왜 확인해야 할까요?' 아코디언 토글
+        function toggleReason(event, id) {
+            event.stopPropagation();
+            const contentEl = document.getElementById(`reason-${id}`);
+            const btnEl = document.getElementById(`btn-${id}`);
+            contentEl.classList.toggle('open');
+            btnEl.classList.toggle('open');
+        }
+
+        // 선택 초기화
+        function resetChecks() {
+            selectedIds.clear();
+            renderSymptoms();
+            updateResult();
+            showToast('체크한 항목이 모두 초기화되었어요.');
+        }
+
+        // 실시간 3단계 결과 피드백 업데이트
+        function updateResult() {
+            const resultBox = document.getElementById('result-box');
+            const count = selectedIds.size;
+
+            let hasUrgent = false;
+            selectedIds.forEach(id => {
+                const found = symptoms.find(s => s.id === id);
+                if (found && found.urgent) hasUrgent = true;
+            });
+
+            if (count === 0) {
+                // 1단계: 안심 단계
+                resultBox.className = 'result-box result-safe';
+                resultBox.innerHTML = `
+                    <div class="result-header">
+                        <div class="result-icon">🌷</div>
+                        <div>
+                            <span class="result-badge">1단계 · 안심 단계</span>
+                            <h3 class="result-title">현재 뚜렷한 위험 신호는 보이지 않아요</h3>
+                        </div>
+                    </div>
+                    <p class="result-desc">
+                        지금처럼 내 몸의 변화를 잘 살펴보면서 건강한 월경 습관을 유지해 주세요! 평소 작은 관리만으로도 생리 기간을 훨씬 편안하게 보낼 수 있어요.
+                    </p>
+                    <div class="result-tips">
+                        <strong>💡 평소 실천하면 좋은 자가관리 팁</strong>
+                        <ul>
+                            <li>생리 시작일과 종료일을 달력에 기록해 내 몸의 주기를 파악해 보세요.</li>
+                            <li>아랫배를 따뜻하게 해주고, 충분한 수면과 가벼운 스트레칭을 챙겨보세요.</li>
+                        </ul>
+                    </div>
+                `;
+            } else if (!hasUrgent && count <= 2) {
+                // 2단계: 주의 및 관찰 단계
+                resultBox.className = 'result-box result-caution';
+                resultBox.innerHTML = `
+                    <div class="result-header">
+                        <div class="result-icon">💗</div>
+                        <div>
+                            <span class="result-badge">2단계 · 주의 및 관찰 단계 (${count}개 선택됨)</span>
+                            <h3 class="result-title">몸의 변화에 조금 더 귀 기울여 주세요</h3>
+                        </div>
+                    </div>
+                    <p class="result-desc">
+                        일시적인 피로나 스트레스 때문에 나타난 변화일 수도 있지만, 내 몸이 "조금 쉬어가자"고 보내는 신호일 수 있어요. 당장 응급 상황은 아니더라도 증상이 어떻게 변하는지 꼼꼼히 기록해 보세요.
+                    </p>
+                    <div class="result-tips">
+                        <strong>💡 지금 추천하는 행동 가이드</strong>
+                        <ul>
+                            <li>언제부터, 얼마나 자주 이런 증상이 있었는지 스마트폰 메모장에 간단히 적어두세요.</li>
+                            <li>다음 생리 주기에도 똑같은 불편함이 반복된다면 산부인과에 방문해 가볍게 검진을 받아보세요.</li>
+                        </ul>
+                    </div>
+                `;
+            } else {
+                // 3단계: 병원 진료 권고 단계
+                resultBox.className = 'result-box result-urgent';
+                resultBox.innerHTML = `
+                    <div class="result-header">
+                        <div class="result-icon">🏥</div>
+                        <div>
+                            <span class="result-badge">3단계 · 병원 진료 권고 단계 (${count}개 선택됨)</span>
+                            <h3 class="result-title">전문의의 진료가 꼭 필요한 신호예요</h3>
+                        </div>
+                    </div>
+                    <p class="result-desc">
+                        그동안 혼자 참느라 정말 고생 많으셨어요. 선택하신 증상은 단순한 컨디션 난조를 넘어 <strong>전문의의 정확한 확인과 도움이 필요한 신호</strong>예요. 무서워하지 마시고 아래 [병원 안내]를 참고해 편안하게 진료를 받아보세요!
+                    </p>
+                    <div class="result-tips">
+                        <strong>💡 지금 바로 이렇게 해보세요</strong>
+                        <ul>
+                            <li>아래 <strong>[내 증상 요약 & 질문 복사하기]</strong> 버튼을 눌러 진료실에 가져갈 메모를 준비해 보세요.</li>
+                            <li>가까운 산부인과를 검색해 편한 시간대에 방문 예약을 잡아보시는 것을 권해드려요.</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        // 내 증상 요약 & 추천 질문 클립보드 복사 함수
+        function copySummaryToClipboard() {
+            let summaryText = "[산부인과 진료 메모]\n\n";
+
+            if (selectedIds.size > 0) {
+                summaryText += "■ 최근 경험한 증상:\n";
+                selectedIds.forEach(id => {
+                    const item = symptoms.find(s => s.id === id);
+                    if (item) {
+                        summaryText += `- ${item.title} (${item.tag})\n`;
+                    }
+                });
+                summaryText += "\n";
+            } else {
+                summaryText += "■ 최근 경험한 증상: (체크리스트에서 선택된 항목 없음)\n\n";
+            }
+
+            summaryText += "■ 의사 선생님께 여쭤보고 싶은 질문:\n";
+            summaryText += "1. 제가 겪고 있는 증상이 정상 범위인지, 치료나 관리가 필요한 상태인지 궁금해요.\n";
+            summaryText += "2. 증상을 완화하기 위해 집에서 실천할 수 있는 생활습관이나 약 복용법이 있을까요?\n";
+            summaryText += "3. 초음파나 혈액 검사 등 추가로 확인해 봐야 할 검사가 있다면 어떤 것이 있나요?\n";
+            summaryText += "4. 앞으로 어떤 증상이 나타나면 병원에 다시 꼭 와야 하나요?";
+
+            // iFrame 및 모든 브라우저 호환을 위한 textarea 복사 방식
+            const textarea = document.createElement('textarea');
+            textarea.value = summaryText;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+
+            try {
+                document.execCommand('copy');
+                showToast(selectedIds.size > 0 
+                    ? '체크한 증상과 추천 질문이 클립보드에 복사되었어요!' 
+                    : '추천 질문 리스트가 클립보드에 복사되었어요!');
+            } catch (err) {
+                showToast('복사에 실패했습니다. 화면 내용을 직접 복사해 주세요.');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        // 토스트 알림 표시
+        let toastTimer;
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2800);
+        }
+    </script>
+</body>
+</html>
